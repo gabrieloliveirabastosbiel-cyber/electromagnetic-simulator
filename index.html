@@ -1,46 +1,519 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Electromagnetic Induction Simulator</title>
+    <title>⚡ SIMULADOR DE INDUÇÃO ELETROMAGNÉTICA ⚡</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial Black', Arial, sans-serif;
+            background: linear-gradient(135deg, #FF6B6B, #FFE66D, #4ECDC4, #95E1D3);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            min-height: 100vh;
             padding: 20px;
         }
-        canvas {
-            border: 1px solid black;
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 3em;
+            color: #FF6B6B;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 1.3em;
+            color: #666;
+            margin-bottom: 40px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .section {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            font-size: 1.8em;
+            color: #4ECDC4;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            padding: 0;
+            height: 15px;
+            cursor: pointer;
+            border-radius: 10px;
+        }
+
+        .slider-value {
+            display: inline-block;
+            background: #FFE66D;
+            color: #333;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-left: 10px;
+            font-size: 1.1em;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        button {
+            padding: 20px;
+            font-size: 1.3em;
+            font-weight: bold;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-calculate {
+            background: linear-gradient(135deg, #FF6B6B, #FF8E8E);
+            color: white;
+        }
+
+        .btn-calculate:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-reset {
+            background: linear-gradient(135deg, #95E1D3, #4ECDC4);
+            color: white;
+        }
+
+        .btn-reset:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(78, 205, 196, 0.4);
+        }
+
+        button:active {
+            transform: translateY(-2px);
+        }
+
+        #coilCanvas {
+            width: 100%;
+            height: 250px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            border: 5px solid #FF6B6B;
             margin-top: 20px;
+        }
+
+        .results-section {
+            grid-column: 1 / -1;
+        }
+
+        .result-card {
+            background: white;
+            padding: 25px;
+            margin: 15px 0;
+            border-radius: 15px;
+            border-left: 8px solid #4ECDC4;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .result-card:hover {
+            transform: translateX(10px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .result-card h3 {
+            color: #FF6B6B;
+            font-size: 1.4em;
+            margin-bottom: 10px;
+        }
+
+        .result-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #4ECDC4;
+            padding: 15px;
+            background: #f0f8ff;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+
+        .result-unit {
+            color: #666;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .emoji {
+            font-size: 2em;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        .formulas {
+            background: linear-gradient(135deg, #FFE66D 0%, #FFD93D 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 30px;
+            border: 3px dashed #FF6B6B;
+        }
+
+        .formulas h3 {
+            color: #333;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        .formula-item {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #333;
+            border-left: 5px solid #FF6B6B;
+        }
+
+        .placeholder {
+            text-align: center;
+            color: #999;
+            font-size: 1.2em;
+            padding: 40px;
+        }
+
+        .info-box {
+            background: #FFE66D;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 3px solid #FF6B6B;
+            font-weight: bold;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Electromagnetic Induction Simulator</h1>
-    <p>This simulator demonstrates the basic principle of electromagnetic induction.</p>
-    <label for="coilResistance">Coil Resistance (Ohms):</label>
-    <input type="number" id="coilResistance" value="10"><br>
-    <label for="magneticField">Magnetic Field Strength (Tesla):</label>
-    <input type="number" id="magneticField" value="0.5"><br>
-    <button id="simulate">Simulate</button>
-    <canvas id="simulationCanvas" width="600" height="400"></canvas>
-    <script>
-        document.getElementById('simulate').onclick = function() {
-            const coilResistance = document.getElementById('coilResistance').value;
-            const magneticField = document.getElementById('magneticField').value;
-            simulateInduction(coilResistance, magneticField);
-        };
+    <div class="container">
+        <h1>⚡ SIMULADOR DE INDUÇÃO ELETROMAGNÉTICA ⚡</h1>
+        <p class="subtitle">Veja a MAGIA da Física acontecendo! 🎆</p>
 
-        function simulateInduction(resistance, field) {
-            const canvas = document.getElementById('simulationCanvas');
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            // Simulation logic goes here
-            ctx.fillStyle = 'blue';
-            ctx.fillRect(100, 100, 150, 150);
-            ctx.fillStyle = 'black';
-            ctx.fillText(`Resistor: ${resistance} Ohms`, 100, 90);
-            ctx.fillText(`Magnetic Field: ${field} Tesla`, 100, 270);
+        <div class="grid">
+            <!-- ENTRADA -->
+            <div class="section">
+                <h2>📥 INSIRA OS VALORES</h2>
+                <div class="info-box">
+                    👇 Mude os valores abaixo e veja a mágica acontecer!
+                </div>
+
+                <div class="input-group">
+                    <label for="magneticField">🧲 Campo Magnético (Tesla)</label>
+                    <input type="range" id="magneticField" min="0" max="2" step="0.1" value="0.5">
+                    <span class="slider-value" id="magneticFieldValue">0.5 T</span>
+                </div>
+
+                <div class="input-group">
+                    <label for="area">📐 Área da Bobina (m²)</label>
+                    <input type="range" id="area" min="0.01" max="1" step="0.05" value="0.1">
+                    <span class="slider-value" id="areaValue">0.1 m²</span>
+                </div>
+
+                <div class="input-group">
+                    <label for="numTurns">🔄 Número de Espiras</label>
+                    <input type="range" id="numTurns" min="1" max="500" step="10" value="100">
+                    <span class="slider-value" id="numTurnsValue">100</span>
+                </div>
+
+                <div class="input-group">
+                    <label for="timeChange">⏱️ Tempo de Mudança (s)</label>
+                    <input type="range" id="timeChange" min="0.1" max="2" step="0.1" value="0.5">
+                    <span class="slider-value" id="timeChangeValue">0.5 s</span>
+                </div>
+
+                <div class="input-group">
+                    <label for="resistance">🔌 Resistência do Circuito (Ω)</label>
+                    <input type="range" id="resistance" min="1" max="100" step="1" value="10">
+                    <span class="slider-value" id="resistanceValue">10 Ω</span>
+                </div>
+
+                <div class="input-group">
+                    <label for="angle">📍 Ângulo (graus)</label>
+                    <input type="range" id="angle" min="0" max="180" step="5" value="0">
+                    <span class="slider-value" id="angleValue">0°</span>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-calculate" onclick="calcularInducao()">🚀 CALCULAR!</button>
+                    <button class="btn-reset" onclick="resetarFormulario()">🔄 RESETAR</button>
+                </div>
+            </div>
+
+            <!-- VISUALIZAÇÃO -->
+            <div class="section">
+                <h2>👀 VISUALIZAÇÃO DA BOBINA</h2>
+                <canvas id="coilCanvas"></canvas>
+                <div class="info-box" style="margin-top: 20px;">
+                    🎨 A bobina fica animada quando você clica em CALCULAR!
+                </div>
+            </div>
+        </div>
+
+        <!-- RESULTADOS -->
+        <div class="section results-section">
+            <h2>📊 RESULTADOS</h2>
+            <div id="results" class="placeholder">
+                👈 Insira os valores e clique em CALCULAR para ver os resultados aqui!
+            </div>
+
+            <div class="formulas">
+                <h3>📐 FÓRMULAS USADAS</h3>
+                <div class="formula-item">🧲 Fluxo Magnético: Φ = B × A × cos(θ)</div>
+                <div class="formula-item">⚡ FEM Induzida: ε = -N × (ΔΦ/Δt)</div>
+                <div class="formula-item">🔌 Corrente: I = ε / R</div>
+                <div class="formula-item">💡 Potência: P = ε² / R</div>
+                <div class="formula-item">⏱️ Energia: E = P × Δt</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Atualizar valores dos sliders
+        document.getElementById('magneticField').addEventListener('input', function() {
+            document.getElementById('magneticFieldValue').textContent = this.value + ' T';
+        });
+
+        document.getElementById('area').addEventListener('input', function() {
+            document.getElementById('areaValue').textContent = this.value + ' m²';
+        });
+
+        document.getElementById('numTurns').addEventListener('input', function() {
+            document.getElementById('numTurnsValue').textContent = this.value;
+        });
+
+        document.getElementById('timeChange').addEventListener('input', function() {
+            document.getElementById('timeChangeValue').textContent = this.value + ' s';
+        });
+
+        document.getElementById('resistance').addEventListener('input', function() {
+            document.getElementById('resistanceValue').textContent = this.value + ' Ω';
+        });
+
+        document.getElementById('angle').addEventListener('input', function() {
+            document.getElementById('angleValue').textContent = this.value + '°';
+        });
+
+        function calcularInducao() {
+            const B = parseFloat(document.getElementById('magneticField').value);
+            const A = parseFloat(document.getElementById('area').value);
+            const N = parseFloat(document.getElementById('numTurns').value);
+            const deltaT = parseFloat(document.getElementById('timeChange').value);
+            const R = parseFloat(document.getElementById('resistance').value);
+            const theta = parseFloat(document.getElementById('angle').value);
+
+            const thetaRad = theta * Math.PI / 180;
+
+            const fluxo = B * A * Math.cos(thetaRad);
+            const deltaFluxo = fluxo;
+            const fem = Math.abs(N * (deltaFluxo / deltaT));
+            const corrente = fem / R;
+            const potencia = (fem * fem) / R;
+            const energia = potencia * deltaT;
+
+            exibirResultados(B, A, N, fluxo, fem, corrente, potencia, energia, theta, deltaT, R);
+            animarBobina(B, N);
+        }
+
+        function exibirResultados(B, A, N, fluxo, fem, corrente, potencia, energia, theta, deltaT, R) {
+            const divResultados = document.getElementById('results');
+            divResultados.innerHTML = `
+                <div class="result-card">
+                    <h3><span class="emoji">🧲</span>Fluxo Magnético (Φ)</h3>
+                    <div class="result-value">${fluxo.toFixed(4)}</div>
+                    <div class="result-unit">Weber (Wb) - Medida de campo magnético</div>
+                </div>
+
+                <div class="result-card">
+                    <h3><span class="emoji">⚡</span>FEM Induzida (ε)</h3>
+                    <div class="result-value">${fem.toFixed(4)}</div>
+                    <div class="result-unit">Volts (V) - Voltagem gerada!</div>
+                </div>
+
+                <div class="result-card">
+                    <h3><span class="emoji">🔌</span>Corrente Induzida (I)</h3>
+                    <div class="result-value">${corrente.toFixed(4)}</div>
+                    <div class="result-unit">Ampere (A) - Fluxo de eletricidade</div>
+                </div>
+
+                <div class="result-card">
+                    <h3><span class="emoji">💡</span>Potência Dissipada (P)</h3>
+                    <div class="result-value">${potencia.toFixed(4)}</div>
+                    <div class="result-unit">Watts (W) - Energia por segundo</div>
+                </div>
+
+                <div class="result-card">
+                    <h3><span class="emoji">⏱️</span>Energia Total (E)</h3>
+                    <div class="result-value">${energia.toFixed(4)}</div>
+                    <div class="result-unit">Joules (J) - Energia total liberada</div>
+                </div>
+
+                <div class="result-card">
+                    <h3><span class="emoji">📊</span>Resumo dos Dados</h3>
+                    <div style="background: #f0f8ff; padding: 15px; border-radius: 10px; font-size: 1.1em;">
+                        <strong>🧲 Campo Magnético:</strong> ${B} T<br>
+                        <strong>📐 Área:</strong> ${A} m²<br>
+                        <strong>🔄 Espiras:</strong> ${N}<br>
+                        <strong>⏱️ Tempo:</strong> ${deltaT} s<br>
+                        <strong>🔌 Resistência:</strong> ${R} Ω<br>
+                        <strong>📍 Ângulo:</strong> ${theta}°
+                    </div>
+                </div>
+            `;
+        }
+
+        function animarBobina(B, N) {
+            const tela = document.getElementById('coilCanvas');
+            const ctx = tela.getContext('2d');
+            let quadro = 0;
+
+            function animar() {
+                quadro++;
+                ctx.clearRect(0, 0, tela.width, tela.height);
+
+                const x = tela.width / 2;
+                const y = tela.height / 2;
+                let tamanhoBobina = 60 + Math.sin(quadro * 0.1) * 10;
+
+                // Gradiente dinâmico
+                const gradiente = ctx.createLinearGradient(0, 0, tela.width, tela.height);
+                gradiente.addColorStop(0, '#667eea');
+                gradiente.addColorStop(0.5, '#764ba2');
+                gradiente.addColorStop(1, '#f093fb');
+                ctx.fillStyle = gradiente;
+                ctx.fillRect(0, 0, tela.width, tela.height);
+
+                // Desenhar bobina
+                ctx.strokeStyle = '#FF6B6B';
+                ctx.lineWidth = 3 + Math.sin(quadro * 0.05) * 1;
+                ctx.beginPath();
+                ctx.arc(x, y, tamanhoBobina, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Desenhar campo magnético
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.lineWidth = 2;
+                for (let i = 0; i < 3; i++) {
+                    ctx.beginPath();
+                    ctx.arc(x, y, tamanhoBobina + (i + 1) * 20 + Math.sin(quadro * 0.05) * 5, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+
+                // Texto
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 22px Arial';
+                ctx.textAlign = 'center';
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                ctx.shadowBlur = 10;
+                ctx.fillText(`${N.toFixed(0)} Espiras`, x, y);
+                ctx.font = 'bold 18px Arial';
+                ctx.fillText(`Campo: ${B.toFixed(2)} T`, x, y + 40);
+
+                if (quadro < 100) {
+                    requestAnimationFrame(animar);
+                }
+            }
+
+            animar();
+        }
+
+        function resetarFormulario() {
+            document.getElementById('magneticField').value = 0.5;
+            document.getElementById('area').value = 0.1;
+            document.getElementById('numTurns').value = 100;
+            document.getElementById('timeChange').value = 0.5;
+            document.getElementById('resistance').value = 10;
+            document.getElementById('angle').value = 0;
+
+            document.getElementById('magneticFieldValue').textContent = '0.5 T';
+            document.getElementById('areaValue').textContent = '0.1 m²';
+            document.getElementById('numTurnsValue').textContent = '100';
+            document.getElementById('timeChangeValue').textContent = '0.5 s';
+            document.getElementById('resistanceValue').textContent = '10 Ω';
+            document.getElementById('angleValue').textContent = '0°';
+
+            document.getElementById('results').innerHTML = '👈 Insira os valores e clique em CALCULAR para ver os resultados aqui!';
+
+            const tela = document.getElementById('coilCanvas');
+            const ctx = tela.getContext('2d');
+            ctx.clearRect(0, 0, tela.width, tela.height);
         }
     </script>
 </body>
